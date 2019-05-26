@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rails
+  labels:
+    name: rails
+    db_selector: rails-production
+    stage: production
+    type: web
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: rails
+        stage: production
+        db_selector: rails-production
+        type: web
+    spec:
+      containers:
+        - name: rails
+          image: rails:latest
+          env:
+            - name: RAILS_ENV
+              value: production
+          command:
+            - bundle
+            - exec
+            - rails
+            - server
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: secrets
+              mountPath: /home/app/config/secrets/
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /_health
+              port: 80
+            initialDelaySeconds: 40
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /_health
+              port: 80
+            initialDelaySeconds: 40
+            timeoutSeconds: 30
+          resources:
+            limits:
+              memory: 2Gi
+            requests:
+              memory: 1.5Gi
+      volumes:
+        - name: secrets
+          secret:
+            secretName: rails-secrets
