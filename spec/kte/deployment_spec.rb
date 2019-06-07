@@ -7,6 +7,7 @@ RSpec.describe KTE::Deployment do
               template do
                 KTE::Template.new(KTE.templates_folder.join('deployment'))
               end
+              containers [:web, :sidekiq]
             end
     inst = klass.new('app')
     value = inst.template.value
